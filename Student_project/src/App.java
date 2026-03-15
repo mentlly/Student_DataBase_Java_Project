@@ -51,10 +51,24 @@ class database {
             Statement stmt = conn.createStatement();
             rowsAffected = stmt.executeUpdate(String.format("insert into marks (RegisterNo, mark1, mark2, mark3) "+ 
                                                                 "select '%s',%.1f,%.1f,%.1f "+ 
-                                                                "where exists (select 1 from student where RegisterNo='%s');"
+                                                                "where exists "+
+                                                                "(select 1 from student where RegisterNo='%s');"
                                                                 ,RegisterNo,mark1,mark2,mark3,RegisterNo));
         } catch (java.sql.SQLIntegrityConstraintViolationException e) {
             System.out.println("The Marks of " + RegisterNo + " is already entered.");
+            System.out.println("Are you sure you want to update the marks? (yes/no)");
+            Scanner sc = new Scanner(System.in);
+            String choice = sc.nextLine();
+            if (choice.equalsIgnoreCase("yes")) {
+                try {
+                    Connection conn = DriverManager.getConnection(url+"student_db", user, password);
+                    Statement stmt = conn.createStatement();
+                    stmt.executeUpdate(String.format("update marks set mark1=%.1f, mark2=%.1f, mark3=%.1f where RegisterNo='%s';",
+                                                        mark1,mark2,mark3,RegisterNo));
+                } catch (Exception ex) {
+                    System.out.println(ex);
+                }
+            }
             return;
         } catch (Exception e) {
             return;
@@ -120,6 +134,37 @@ class database {
             return;
         }
     }
+    void studentCgpaDisplay() {
+        try {
+            Connection conn = DriverManager.getConnection(url+"student_db",user,password);
+            String query = "select s.RegisterNo, s.Name, s.Department, "+
+                            "round((m.mark1 + m.mark2 + m.mark3)/30, 2) as CGPA "+
+                            "from student s "+
+                            "left join marks m on s.RegisterNo = m.RegisterNo;";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            System.out.println("=".repeat(60));
+            System.out.printf("| %-11s | %-20s | %-10s | %-5s |",
+                                "RegisterNo","Name","Department","CGPA");
+            System.out.println();
+            System.out.println("=".repeat(60));
+            while (rs.next()) {
+                String RegisterNo = rs.getString("RegisterNo");
+                String Name = rs.getString("Name");
+                String Department = rs.getString("Department");
+                Object CGPA = rs.getObject("CGPA");
+
+                System.out.printf("| %-11s | %-20s | %-10s | %-5s |",
+                                    RegisterNo,Name,Department,CGPA);
+                System.out.println();
+            }
+            System.out.println("=".repeat(60));
+            System.out.println();
+        } catch (Exception e) {
+            System.out.println(e);
+            return;
+        }
+    }
 }
 
 public class App {
@@ -133,7 +178,7 @@ public class App {
         while (loop == 1) {
             System.out.print("1.Enter a student\n2.Enter student marks\n"+
                                 "3.Display of students\n4.Display of marks\n"+
-                                "5.Exit\nEnter choice:");
+                                "5.Display CGPA\n6.Exit\nEnter choice:");
             int choice = sc.nextInt();
             sc.nextLine();
             switch (choice) {
@@ -164,6 +209,9 @@ public class App {
                     db.studentMarkDisplay();
                     break;
                 case 5:
+                    db.studentCgpaDisplay();
+                    break;
+                case 6:
                     loop = 0;
                     break;
                 default:
