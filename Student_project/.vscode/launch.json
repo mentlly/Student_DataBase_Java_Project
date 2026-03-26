@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "App",
+            "projectName": "Student_project_9857f9ea"
+        },
+        {
+            "type": "java",
+            "name": "Run JavaSwing (MySQL)",
+            "request": "launch",
+            "mainClass": "JavaSwing",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "classPaths": [
+                "${workspaceFolder}/bin",
+                "${workspaceFolder}/lib/mysql-connector-j-8.4.0.jar"
+            ]
+        }
+    ]
+}
